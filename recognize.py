@@ -75,7 +75,6 @@ def run_recognition(on_identify=None):
     """
     known_encodings, known_names = load_encodings()
 
-    # cap = cv2.VideoCapture(0)
     # Use environment variable for video source, default to 0 (webcam)
     video_source = os.getenv("VIDEO_SOURCE", "0")
     if video_source.isdigit():
