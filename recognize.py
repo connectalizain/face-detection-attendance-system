@@ -101,7 +101,8 @@ def run_recognition(on_identify=None):
             draw_results(frame, last_results)
             cv2.imshow("Attendance System", frame)
 
-            if cv2.waitKey(1) & 0xFF == ord("q"):
+            # Wait longer to slow down playback (30ms ~ 33fps)
+            if cv2.waitKey(30) & 0xFF == ord("q"):
                 break
     finally:
         cap.release()
