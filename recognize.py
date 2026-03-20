@@ -75,12 +75,8 @@ def run_recognition(on_identify=None):
     """
     known_encodings, known_names = load_encodings()
 
-    # Use environment variable for video source, default to 0 (webcam)
-    video_source = os.getenv("VIDEO_SOURCE", "0")
-    if video_source.isdigit():
-        video_source = int(video_source)
-    
-    cap = cv2.VideoCapture(video_source)
+    # cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(r"F:\Zain\Konversation\dev-mvp-face-detection\attendance-system\test-video\ali.mp4")
     if not cap.isOpened():
         print("Error: could not open webcam.")
         sys.exit(1)
