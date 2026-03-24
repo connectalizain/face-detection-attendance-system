@@ -1,9 +1,10 @@
 # Entry point: runs the main camera loop
 
+import sys
 from datetime import datetime
 
 from logger import get_today_logs, log_attendance
-from recognize import load_encodings, run_recognition
+from recognize import run_recognition
 
 
 def on_identify(name):
@@ -18,20 +19,30 @@ def print_summary():
     print("\n--- Session Summary ---")
     print(f"Date: {datetime.now().strftime('%Y-%m-%d')}")
     if logs:
-        for entry in logs:
-            print(f"  ✓ {entry['student']} — {entry['time']}")
+        # Deduplicate names for the summary
+        present_students = {entry['student'] for entry in logs}
+        for student in sorted(present_students):
+            # Find the first log for this student today
+            first_log = next(entry for entry in logs if entry['student'] == student)
+            print(f"  ✓ {student} — {first_log['time']}")
     else:
         print("  No attendance logged this session")
 
 
 if __name__ == "__main__":
-    known_encodings, _ = load_encodings()
+    # Allow passing video path as first argument
+    # e.g. python main.py 0 (for webcam)
+    video_source = sys.argv[1] if len(sys.argv) > 1 else None
+    
+    # Check if we should use integer 0 for webcam
+    if video_source == "0":
+        video_source = 0
+
     print("Attendance System Starting...")
-    print(f"Loaded {len(known_encodings)} known faces")
     print("Press 'q' to quit")
 
     try:
-        run_recognition(on_identify=on_identify)
+        run_recognition(on_identify=on_identify, video_source=video_source)
     except KeyboardInterrupt:
         pass
 
