@@ -3,28 +3,22 @@
 import sys
 from datetime import datetime
 
-from logger import get_today_logs, log_attendance
+from webhook_logger import log_attendance_webhook, announced
 from recognize import run_recognition
 
 
-def on_identify(name):
+def on_identify(name, guardian_no, guardian_name, school_name):
     if name == "Unknown":
         return
-    if log_attendance(name):
-        print(f"✓ {name} marked present")
+    log_attendance_webhook(name, guardian_no, guardian_name, school_name)
 
 
 def print_summary():
-    logs = get_today_logs()
     print("\n--- Session Summary ---")
     print(f"Date: {datetime.now().strftime('%Y-%m-%d')}")
-    if logs:
-        # Deduplicate names for the summary
-        present_students = {entry['student'] for entry in logs}
-        for student in sorted(present_students):
-            # Find the first log for this student today
-            first_log = next(entry for entry in logs if entry['student'] == student)
-            print(f"  ✓ {student} — {first_log['time']}")
+    if announced:
+        for student in sorted(announced):
+            print(f"  ✓ {student}")
     else:
         print("  No attendance logged this session")
 

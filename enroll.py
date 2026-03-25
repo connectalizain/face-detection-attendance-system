@@ -29,8 +29,8 @@ def save_encodings(encodings):
         pickle.dump(encodings, f)
 
 
-def enroll_student(name, image_path):
-    if not os.path.exists(image_path):
+def enroll_student(name, guardian_no="", guardian_name="", school_name="", image_path=""):
+    if not image_path or not os.path.exists(image_path):
         print(f"Error: image file not found: {image_path}")
         sys.exit(1)
 
@@ -53,7 +53,13 @@ def enroll_student(name, image_path):
     encoding = encodings[0]
 
     all_encodings = load_encodings()
-    all_encodings.append({"name": name, "encoding": encoding})
+    all_encodings.append({
+        "name": name,
+        "guardian_no": guardian_no,
+        "guardian_name": guardian_name,
+        "school_name": school_name,
+        "encoding": encoding
+    })
     save_encodings(all_encodings)
 
     unique_students = len({e["name"] for e in all_encodings})
@@ -64,6 +70,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Enroll a student into the face recognition system.")
     parser.add_argument("--name", required=True, help="Student name")
     parser.add_argument("--image", required=True, help="Path to the student's photo")
+    parser.add_argument("--guardian_no", default="", help="Guardian phone number (optional)")
+    parser.add_argument("--guardian_name", default="", help="Guardian name (optional)")
+    parser.add_argument("--school_name", default="", help="School name (optional)")
     args = parser.parse_args()
 
-    enroll_student(args.name, args.image)
+    enroll_student(args.name, args.guardian_no, args.guardian_name, args.school_name, args.image)

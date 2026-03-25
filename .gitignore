@@ -16,3 +16,6 @@ prompt.text
 CLAUDE.md
 test-video/
 .env
+
+# Ignore instructions
+instructions.txt

@@ -1,68 +1,45 @@
-# Bulk enrolls all students from the known_faces directory
-
 import os
-import pickle
-import sys
-import face_recognition
+from enroll import enroll_student, ENCODINGS_PATH
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-ENCODINGS_PATH = os.path.join(DATA_DIR, "encodings.pkl")
-KNOWN_FACES_DIR = os.path.join(os.path.dirname(__file__), "known_faces")
+# Delete data/encodings.pkl if it exists before starting fresh
+if os.path.exists(ENCODINGS_PATH):
+    os.remove(ENCODINGS_PATH)
+    print(f"Deleted existing encodings at {ENCODINGS_PATH}")
 
-def load_encodings():
-    if not os.path.exists(ENCODINGS_PATH):
-        return []
-    try:
-        with open(ENCODINGS_PATH, "rb") as f:
-            return pickle.load(f)
-    except Exception as e:
-        print(f"Error: could not read encodings file: {e}")
-        return []
+STUDENTS = [
+    {"name": "Bento Oliveira", "guardian_no": "+558481335076", "guardian_name": "Frederico Lima", "school_name": "ABC School", "images": ["image.jpeg"]},
+    {"name": "Cavalcanti", "guardian_no": "+558481335076", "guardian_name": "Frederico Lima", "school_name": "ABC School", "images": ["image.jpeg"]},
+    {"name": "Evania Galdino", "guardian_no": "+558481335076", "guardian_name": "Frederico Lima", "school_name": "ABC School", "images": ["image.jpeg"]},
+    {"name": "Frederico", "guardian_no": "+558481335076", "guardian_name": "Frederico Lima", "school_name": "ABC School", "images": ["image1.jpeg", "image.jpeg"]},
+    {"name": "Freire", "guardian_no": "+558481335076", "guardian_name": "Frederico Lima", "school_name": "ABC School", "images": ["image.jpeg"]},
+    {"name": "girl", "guardian_no": "+558481335076", "guardian_name": "Frederico Lima", "school_name": "ABC School", "images": ["image.jpeg"]},
+    {"name": "Valtinho Araújo", "guardian_no": "+558481335076", "guardian_name": "Frederico Lima", "school_name": "ABC School", "images": ["image.jpeg", "image1.jpeg", "image2.jpeg"]},
+]
 
-def save_encodings(encodings):
-    os.makedirs(DATA_DIR, exist_ok=True)
-    with open(ENCODINGS_PATH, "wb") as f:
-        pickle.dump(encodings, f)
-    print(f"Saved {len(encodings)} encodings to {ENCODINGS_PATH}")
+total_students = 0
+total_images = 0
 
-def enroll_all():
-    if not os.path.exists(KNOWN_FACES_DIR):
-        print(f"Error: {KNOWN_FACES_DIR} not found.")
-        sys.exit(1)
-
-    all_encodings = []
+for student in STUDENTS:
+    name = student["name"]
+    g_no = student["guardian_no"]
+    g_name = student["guardian_name"]
+    s_name = student["school_name"]
     
-    for person_name in os.listdir(KNOWN_FACES_DIR):
-        person_dir = os.path.join(KNOWN_FACES_DIR, person_name)
-        if not os.path.isdir(person_dir):
+    enrolled_at_least_one = False
+    for image_filename in student["images"]:
+        image_path = os.path.join("known_faces", name, image_filename)
+        
+        if not os.path.exists(image_path):
+            print(f"Warning: image file not found, skipping: {image_path}")
             continue
             
-        print(f"Enrolling {person_name}...")
-        for image_name in os.listdir(person_dir):
-            image_path = os.path.join(person_dir, image_name)
-            if not image_name.lower().endswith(('.png', '.jpg', '.jpeg')):
-                continue
-                
-            try:
-                image = face_recognition.load_image_file(image_path)
-                # Use cnn model for enrollment if possible for better quality encodings
-                # But hog is fine for enrollment if images are clear
-                face_locations = face_recognition.face_locations(image)
-                
-                if len(face_locations) == 0:
-                    print(f"  [!] No face found in {image_name}. Skipping.")
-                    continue
-                
-                encodings = face_recognition.face_encodings(image, known_face_locations=face_locations)
-                if encodings:
-                    all_encodings.append({"name": person_name, "encoding": encodings[0]})
-                    print(f"  [+] Enrolled {image_name}")
-            except Exception as e:
-                print(f"  [!] Error processing {image_name}: {e}")
+        enroll_student(name, g_no, g_name, s_name, image_path)
+        total_images += 1
+        enrolled_at_least_one = True
+    
+    if enrolled_at_least_one:
+        total_students += 1
 
-    save_encodings(all_encodings)
-    unique_students = len({e["name"] for e in all_encodings})
-    print(f"Bulk enrollment complete. Total images: {len(all_encodings)}, Total students: {unique_students}")
-
-if __name__ == "__main__":
-    enroll_all()
+print("\n--- Bulk Enrollment Summary ---")
+print(f"Total students successfully enrolled: {total_students}")
+print(f"Total images processed: {total_images}")
