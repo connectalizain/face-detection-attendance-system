@@ -51,7 +51,7 @@ def recognize():
             best_idx = int(np.argmin(distances))
             metadata = known_metadata[best_idx]
             log_attendance_webhook(
-                student_name=metadata["name"],
+                name=metadata["name"],
                 guardian_no=metadata.get("guardian_no", ""),
                 guardian_name=metadata.get("guardian_name", ""),
                 school_name=metadata.get("school_name", "")
